@@ -339,3 +339,51 @@ input[type="checkbox"]:checked + label::before {
 h1, h2, h3, .navbar, .navbar-brand, .nav-link, .navbar-actions button, .form-container, .footer, .thumbnail {
     font-weight: bold;
 }
+
+
+/* 确保 body 和 html 元素的 margin 和 padding 设置为 0 */
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden; /* 隐藏水平滚动条 */
+}
+
+/* 确保 .container 元素的宽度不超过视口宽度 */
+.container {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* 确保 .navbar 和 .footer 元素不会导致滚动条出现 */
+.navbar, .footer {
+    width: 100%;
+    box-sizing: border-box; /* 确保 padding 和 border 包含在宽度内 */
+}
+
+/* 确保 #gallery 元素不会导致滚动条出现 */
+#gallery {
+    width: 100%;
+    overflow-x: hidden; /* 隐藏水平滚动条 */
+}
+
+.content {
+    flex: 1;
+    margin-bottom: 20px; /* 确保内容不会被 .footer 元素遮挡，可以根据实际情况调整 */
+}
+
+
+.footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 5px 0; /* 调整 padding 以确保高度为 30px */
+    box-sizing: border-box; /* 确保 padding 和 border 包含在宽度内 */
+    z-index: 1000; /* 确保在内容之上 */
+}
+
+
+
+
