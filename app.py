@@ -96,11 +96,11 @@ def index():
     if current_user.is_admin:
         # 管理员查看所有用户的图片
         user_folders = [f for f in os.listdir(BASE_IMAGE_FOLDER) if os.path.isdir(os.path.join(BASE_IMAGE_FOLDER, f))]
-        images = {user: os.listdir(os.path.join(BASE_IMAGE_FOLDER, user)) for user in user_folders}
+        images = {user: [f for f in os.listdir(os.path.join(BASE_IMAGE_FOLDER, user)) if f.lower().endswith(('.jpg', '.png'))] for user in user_folders}
     else:
         # 普通用户查看自己的图片
         user_folder = os.path.join(BASE_IMAGE_FOLDER, current_user.username)
-        images = {current_user.username: os.listdir(user_folder)}
+        images = {current_user.username: [f for f in os.listdir(user_folder) if f.lower().endswith(('.jpg', '.png'))]}
     logging.info("访问主页，用户: %s", current_user.username)
     return render_template('index.html', images=images, is_admin=current_user.is_admin)
 
