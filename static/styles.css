@@ -1,9 +1,22 @@
-body {
-    font-family: Arial, sans-serif;
+@font-face {
+    font-family: 'MiSans';
+    src: url('/static/fonts/misans.ttf') format('truetype');
+}
+
+body, html {
+    font-family: 'MiSans', sans-serif;
+    font-weight: bold;
     margin: 0;
     padding: 0;
     background-color: rgb(234, 234, 224);
     overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.content {
+    flex: 1;
 }
 
 h1, h2, h3 {
@@ -22,6 +35,8 @@ h1, h2, h3 {
     left: 0;
     width: 100%;
     z-index: 1000;
+    display: flex;
+    align-items: center;
 }
 
 .navbar .container {
@@ -226,6 +241,11 @@ button:hover {
     padding: 10px 0;
     width: 100%;
     position: relative;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: auto;
 }
 
 .form-container input {
@@ -279,4 +299,43 @@ button:hover {
 ::selection {
     color: #fff;
     background: rgb(213, 184, 255);
-} 
+}
+
+
+/* 基础样式重置，隐藏默认的复选框 */
+input[type="checkbox"] {
+  display: none;
+}
+
+/* 设置复选框选中后label的颜色 */
+input[type="checkbox"]:checked + label::after {
+  color: rgb(213, 184, 255);
+}
+
+/* 为复选框创建自定义样式 */
+input[type="checkbox"] + label::before {
+  content: "\2714"; /* 使用Unicode字符表示勾选符号 */
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  margin-right: 0.4em;
+  border: 1px solid #aaa;
+  text-align: center;
+  line-height: 1em;
+  transition: color 0.3s; /* 添加过渡效果 */
+}
+
+/* 隐藏未选中状态的勾选符号 */
+input[type="checkbox"] + label::after {
+  content: '';
+  display: none;
+}
+
+/* 显示选中状态的勾选符号，并应用自定义颜色 */
+input[type="checkbox"]:checked + label::before {
+  color: rgb(213, 184, 255); /* 自定义选中的颜色 */
+}
+
+h1, h2, h3, .navbar, .navbar-brand, .nav-link, .navbar-actions button, .form-container, .footer, .thumbnail {
+    font-weight: bold;
+}

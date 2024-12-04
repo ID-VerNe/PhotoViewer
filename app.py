@@ -41,7 +41,7 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        hashed_password = generate_password_hash(password, method='sha256')
+        hashed_password = generate_password_hash(password)
         try:
             # 确保文件存在并可读
             if not os.path.exists('users.csv'):

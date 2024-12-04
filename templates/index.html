@@ -2,25 +2,17 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>🐠的返图</title>
+    <title>🐠的返图·首页</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <style>
-        /* 确保页面内容和页脚使用flexbox布局 */
+
         body, html {
-            height: 100%;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-        }
-        .content {
-            flex: 1; /* 使内容区域扩展以填充剩余空间 */
+            font-family: 'MiSans', sans-serif;
         }
     </style>
     <!-- 引入JSZip和FileSaver.js库 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <!-- 使用UMD版本的Interact.js -->
-    <script src="https://cdn.jsdelivr.net/npm/@interactjs/interactjs/dist/interact.min.js"></script>
 </head>
 <body>
     <!-- 导航栏 -->

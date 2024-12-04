@@ -3,6 +3,14 @@ let isDragging = false;
 let startX, startY, scrollLeft, scrollTop;
 let currentRotationIndex = 0;
 const rotationAngles = [0, 270, 180, 90, 0];
+let initialNavbarText;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const navbarInfo = document.getElementById('navbar-info');
+    if (navbarInfo) {
+        initialNavbarText = navbarInfo.textContent; // 存储初始文本
+    }
+});
 
 function viewImage(user, image) {
     console.log("查看图片: " + user + "/" + image);
@@ -91,19 +99,20 @@ function updateNavbar() {
     const navbarActions = document.getElementById('navbar-actions');
     if (navbarInfo && navbarActions) {
         if (selectedCount > 0) {
-            navbarInfo.textContent = `已选择 ${selectedCount} 张图片`;
+            navbarInfo.textContent = `已选中 ${selectedCount} 张图片`;
         } else {
-            navbarInfo.textContent = '图片浏览器';
+            navbarInfo.textContent = initialNavbarText; // 使用存储的初始文本
         }
         navbarActions.style.display = 'flex';
     }
 }
 
 function clearSelection() {
-    document.querySelectorAll('.select-checkbox:checked').forEach(checkbox => {
+    const checkboxes = document.querySelectorAll('.select-checkbox');
+    checkboxes.forEach(checkbox => {
         checkbox.checked = false;
-        toggleImageSize(checkbox);
     });
+
     updateNavbar();
 }
 
