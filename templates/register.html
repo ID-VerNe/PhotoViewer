@@ -5,15 +5,14 @@
     <title>🐠的返图·注册</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <style>
-
         body, html {
             font-family: 'MiSans', sans-serif;
         }
         .content {
-            height: 100%;
-            margin: 0;
+            flex: 1;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
         .form-container {
             background-color: white;
@@ -68,7 +67,12 @@
 
     <footer class="footer">
         <div class="container">
-            <p>&copy; 🐠的返图. 版权所有.</p>
+            <p>&copy; 🐠的返图. 版权所有. 
+                <a href="https://github.com/ID-VerNe/PhotoViewer" target="_blank" style="color: #fff; text-decoration: none;">
+                    <img src="{{ url_for('static', filename='images/github-mark.png') }}" alt="GitHub" style="width: 20px; vertical-align: middle; margin-left: 10px;">
+                    GitHub
+                </a>
+            </p>
         </div>
     </footer>
 </body>
