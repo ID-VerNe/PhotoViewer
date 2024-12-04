@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>🐠的返图</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        /* 确保页面内容和页脚使用flexbox布局 */
+        body, html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .content {
+            flex: 1; /* 使内容区域扩展以填充剩余空间 */
+        }
+    </style>
+    <!-- 引入JSZip和FileSaver.js库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <!-- 使用UMD版本的Interact.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@interactjs/interactjs/dist/interact.min.js"></script>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand" id="navbar-info">欢迎, {{ current_user.username }}</div>
+            <div class="navbar-actions" id="navbar-actions">
+                <button onclick="downloadIndividually()">下载</button>
+                <button onclick="clearSelection()">清除</button>
+                <button onclick="selectAll()">全选</button>
+                <button onclick="invertSelection()">反选</button>
+            </div>
+            <div class="navbar-auth">
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('logout') }}" class="nav-link">注销</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="nav-link">登录</a>
+                    <a href="{{ url_for('register') }}" class="nav-link">注册</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <div class="content">
+        {% if is_admin %}
+        <h2>管理员视图</h2>
+        {% endif %}
+        <div id="gallery">
+            {% for user, user_images in images.items() %}
+            {% for image in user_images %}
+            <div class="image-container">
+                <input type="checkbox" class="select-checkbox" data-filename="{{ image }}" data-user="{{ user }}" onclick="updateNavbar(); toggleImageSize(this)">
+                <img src="{{ url_for('image', username=user, filename=image) }}" class="thumbnail" loading="lazy" onclick="viewImage('{{ user }}', '{{ image }}')">
+            </div>
+            {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="fullscreen-view" style="display:none;" onclick="closeFullscreen(event)">
+        <img id="fullscreen-image" class="fullscreen" draggable="false">
+        <button class="back-btn" onclick="closeFullscreen(event)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 18L9 12L15 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 🐠的返图. 版权所有.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+</body>
+</html> 
