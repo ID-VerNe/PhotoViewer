@@ -8,7 +8,7 @@ let initialNavbarText;
 document.addEventListener('DOMContentLoaded', () => {
     const navbarInfo = document.getElementById('navbar-info');
     if (navbarInfo) {
-        initialNavbarText = navbarInfo.textContent; // 存储初始文本
+        initialNavbarText = navbarInfo.textContent;
     }
 });
 
@@ -19,12 +19,8 @@ function viewImage(user, image) {
     imgElement.src = '/image/' + user + '/' + image;
     imgElement.style.transform = `rotate(${rotationAngles[currentRotationIndex]}deg)`;
 
-    // 确保移除所有拖拽相关的事件
-    imgElement.onmousedown = null;
-    imgElement.onmousemove = null;
-    imgElement.onmouseup = null;
-    imgElement.ondragstart = function() { return false; }; // 禁用拖拽
-
+    // 将页脚放在下一层
+    document.querySelector('.footer').style.zIndex = '999';
 
     imgElement.onload = function() {
         const container = document.getElementById('fullscreen-view');
@@ -39,7 +35,6 @@ function viewImage(user, image) {
             imgElement.style.height = 'auto';
         }
     };
-
 }
 
 function closeFullscreen(event) {
@@ -47,6 +42,9 @@ function closeFullscreen(event) {
     if (event.target.id === 'fullscreen-view' || event.target.closest('.back-btn')) {
         console.log("关闭全屏查看");
         document.getElementById('fullscreen-view').style.display = 'none';
+
+        // 恢复页脚的z-index
+        document.querySelector('.footer').style.zIndex = '1000';
     }
 }
 
@@ -111,6 +109,8 @@ function clearSelection() {
     const checkboxes = document.querySelectorAll('.select-checkbox');
     checkboxes.forEach(checkbox => {
         checkbox.checked = false;
+        const image = checkbox.nextElementSibling;
+        image.style.transform = 'scale(1)';
     });
 
     updateNavbar();

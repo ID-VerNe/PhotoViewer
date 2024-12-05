@@ -1,0 +1,26 @@
+:root {
+    /* 颜色变量 */
+    --primary-color: rgb(213, 184, 255);
+    --primary-hover-color: #bfa1e6;
+    --background-color: rgb(234, 234, 224);
+    --text-light: #fff;
+    --text-dark: #000;
+    --border-color: #ccc;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --overlay-color: rgba(0, 0, 0, 0.8);
+
+    /* 字体大小变量 */
+    --font-size-small: 14px;
+    --font-size-normal: 16px;
+    --font-size-medium: 18px;
+    --font-size-large: 24px;
+    --font-size-xlarge: 32px;
+
+    /* 字体族 */
+    --font-family-main: 'MiSans', sans-serif;
+
+    /* 过渡动画时长 */
+    --transition-fast: 0.2s;
+    --transition-normal: 0.3s;
+    --transition-slow: 0.5s;
+}

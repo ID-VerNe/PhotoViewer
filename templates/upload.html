@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>图片上传</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+    <style>
+        .upload-container {
+            max-width: 800px;
+            width: 85%;
+            margin: 60px auto 30px;
+            padding: 20px;
+            background-color: var(--text-light);
+            box-shadow: 0 0 10px var(--shadow-color);
+            border-radius: 8px;
+        }
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .upload-area.dragover {
+            background-color: var(--hover-color);
+            border-color: var(--primary-color);
+        }
+        .upload-area i {
+            font-size: 48px;
+            color: var(--primary-color);
+        }
+        .file-list {
+            margin-top: 20px;
+        }
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .file-item .preview {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+            object-fit: cover;
+        }
+        .file-item .info {
+            flex-grow: 1;
+        }
+        .file-item .remove {
+            color: red;
+            cursor: pointer;
+            padding: 5px;
+        }
+        .progress-bar {
+            height: 4px;
+            background-color: #f0f0f0;
+            border-radius: 2px;
+            margin-top: 5px;
+        }
+        .progress {
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 2px;
+            width: 0;
+            transition: width 0.3s ease;
+        }
+        #upload-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        #upload-btn:hover {
+            background-color: var(--primary-hover-color);
+        }
+        #upload-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .user-select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">图片上传</div>
+            <div class="navbar-auth">
+                <a href="{{ url_for('admin') }}" class="nav-link">返回管理</a>
+                <a href="{{ url_for('logout') }}" class="nav-link">注销</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="upload-container">
+        <select class="user-select" id="user-select">
+            <option value="">选择用户...</option>
+            {% for user in users %}
+                {% if user.username != admin_username %}
+                <option value="{{ user.username }}">{{ user.username }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+
+        <div class="upload-area" id="upload-area">
+            <i>📁</i>
+            <p>点击或拖拽文件到此处上传</p>
+            <input type="file" id="file-input" multiple accept="image/*" style="display: none;">
+        </div>
+
+        <div class="file-list" id="file-list">
+            <!-- 文件列表将通过 JavaScript 动态添加 -->
+        </div>
+
+        <button id="upload-btn" disabled>开始上传</button>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 🐠的返图. 版权所有.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='upload.js') }}"></script>
+</body>
+</html> 

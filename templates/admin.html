@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>用户管理</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+    <style>
+        .admin-container {
+            max-width: 1400px;
+            width: 85%;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--text-light);
+            box-shadow: 0 0 10px var(--shadow-color);
+            border-radius: 8px;
+            margin-top: 60px;
+            margin-bottom: 30px;
+        }
+        .admin-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .admin-container table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .admin-container table, th, td {
+            border: 1px solid var(--border-color);
+        }
+        .admin-container tr {
+            height: 60px;
+        }
+        th, td {
+            padding: 0 10px;
+            text-align: left;
+            vertical-align: middle;
+        }
+        .admin-container form {
+            display: inline-block;
+            margin: 0 5px;
+        }
+        .admin-container input, .admin-container button {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: var(--font-family-main);
+        }
+        .admin-container button {
+            background-color: var(--primary-color);
+            color: var(--text-light);
+            cursor: pointer;
+            transition: background-color var(--transition-fast);
+        }
+        .admin-container button:hover {
+            background-color: var(--primary-hover-color);
+        }
+        .content {
+            flex: 1;
+            margin-top: 60px;
+            margin-bottom: 30px;
+        }
+        .log-content {
+            white-space: pre-wrap; /* 保证换行 */
+            word-wrap: break-word; /* 超出宽度时换行 */
+            max-height: 300px; /* 设置最大高度，便于滚动查看 */
+            overflow-y: auto; /* 超出高度时滚动 */
+        }
+        .add-user-form {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+        .add-user-form input {
+            height: 45px;
+            width: 90%;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        .add-user-form button {
+            flex-shrink: 0; /* 确保按钮不会缩小 */
+        }
+        .image-management {
+            margin-top: 30px;
+        }
+        .upload-btn button {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
+        .user-section {
+            margin-bottom: 30px;
+        }
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .image-item {
+            position: relative;
+            aspect-ratio: 1;
+            cursor: pointer;
+        }
+        .image-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+            transition: transform 0.2s;
+        }
+        .image-checkbox {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 2;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            opacity: 0;  /* 默认隐藏复选框 */
+        }
+        .image-item.selected img {
+            transform: scale(0.9);  /* 选中时缩小更多 */
+            box-shadow: 0 0 0 4px var(--primary-color);  /* 增加边框宽度 */
+        }
+        .image-item:hover img {
+            transform: scale(0.95);  /* 调整悬停缩放比例 */
+        }
+        .image-item.selected:hover img {
+            transform: scale(0.9);  /* 保持选中状态的缩放比例 */
+        }
+        .image-actions {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .image-item:hover .image-actions {
+            opacity: 1;
+        }
+        .delete-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .delete-btn:hover {
+            background: #cc0000;
+        }
+        .log-section {
+            margin-top: 30px;
+        }
+        .log-title {
+            text-align: center;
+            margin-bottom: 20px;
+            user-select: none;
+        }
+        .log-title:hover {
+            color: var(--primary-color);
+        }
+        .log-content {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+        .image-title {
+            text-align: center;
+            margin-bottom: 20px;
+            user-select: none;
+        }
+        .image-title:hover {
+            color: var(--primary-color);
+        }
+        .user-title {
+            text-align: left;
+            margin-bottom: 15px;
+            user-select: none;
+            transition: color 0.3s;
+        }
+        .user-title:hover {
+            color: var(--primary-color);
+        }
+        .image-item {
+            position: relative;
+        }
+        .image-checkbox {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 2;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        .batch-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;  /* 允许按钮换行 */
+        }
+        .batch-actions button {
+            padding: 5px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: var(--primary-color);
+            color: white;
+            min-width: 80px;  /* 小宽度使��钮大小一致 */
+        }
+        .invert-select-btn, .clear-select-btn {
+            background-color: #666 !important;
+        }
+        .invert-select-btn:hover, .clear-select-btn:hover {
+            background-color: #555 !important;
+        }
+        .batch-delete-btn {
+            background-color: #ff4444 !important;
+        }
+        .batch-delete-btn:hover:not(:disabled) {
+            background-color: #cc0000 !important;
+        }
+        .admin-container td button {
+            width: 90px;
+            height: 45px;
+            margin: 0 5px;
+            padding: 0;  /* 移除内边距以确保大小准确 */
+            line-height: 45px;  /* 确保文字垂直居中 */
+            text-align: center;
+            font-size: 14px;
+            border: none;
+            border-radius: 4px;
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            transition: background-color var(--transition-fast);
+        }
+
+        .admin-container td button:hover {
+            background-color: var(--primary-hover-color);
+        }
+
+        /* 添加用户按钮容器样式 */
+        .add-user-btn-container {
+            width: 100px;
+            height: 45px;
+            border-radius: 4px;
+            border: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 5px;
+        }
+
+        /* 修改添加用户按钮样式 */
+        .add-user-form button {
+            width: 90px !important;
+            height: 35px !important;  /* 稍微减小高度以适应容器 */
+            margin: 0 !important;
+            line-height: 35px !important;  /* 匹配新的高度 */
+        }
+
+        /* 修改上传按钮的链接样式 */
+        .upload-btn {
+            text-decoration: none;  /* 移除下划线 */
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">管理后台</div>
+            <div class="navbar-auth">
+                <a href="{{ url_for('logout') }}" class="nav-link">注销</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        <h2>用户管理</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>用户名</th>
+                    <th>身份</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.username }}</td>
+                    <td class="user-role">用户</td>
+                    <td>
+                        {% if user.username != admin_username %}
+                        <form method="post" action="{{ url_for('delete_user', username=user.username) }}" style="display:inline-block;">
+                            <button type="submit">删除</button>
+                        </form>
+                        <form method="post" action="{{ url_for('reset_password', username=user.username) }}" style="display:inline-block;">
+                            <button type="submit">重置密码</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <form method="post" action="{{ url_for('add_user') }}" class="add-user-form" style="margin: 0;">
+                        <td><input type="text" name="username" placeholder="用户名" required style="width: 90%; margin: 0;"></td>
+                        <td><input type="password" name="password" placeholder="密码" required style="width: 90%; margin: 0;"></td>
+                        <td>
+                            
+                            <div class="add-user-btn-container">
+                                <button type="submit">添加用户</button>
+                            </div>
+
+
+                        </td>
+                    </form>
+                </tr>
+            </tbody>
+        </table>
+        <h2 class="image-title" style="cursor: pointer;">▼ 图片管理</h2>
+        <div class="image-management" style="display: none;">
+            <a href="{{ url_for('upload') }}" class="upload-btn">
+                <button type="button">上传图片</button>
+            </a>
+            
+            <div class="user-images">
+                {% for user in users %}
+                    {% if user.username != admin_username %}
+                    <div class="user-section">
+                        <h3 class="user-title" style="cursor: pointer;">▼ {{ user.username }}</h3>
+                        <div class="user-images-grid" style="display: none;">
+                            <div class="batch-actions" style="margin-bottom: 10px;">
+                                <button type="button" class="select-all-btn">全选</button>
+                                <button type="button" class="invert-select-btn">反选</button>
+                                <button type="button" class="clear-select-btn">清除</button>
+                                <button type="button" class="batch-delete-btn" disabled>删除选中</button>
+                            </div>
+                            <div class="image-grid">
+                                {% if images.get(user.username) %}
+                                    {% for image in images.get(user.username) %}
+                                    <div class="image-item">
+                                        <input type="checkbox" class="image-checkbox" data-username="{{ user.username }}" data-filename="{{ image }}">
+                                        <img data-src="{{ url_for('thumbnail', username=user.username, filename=image) }}" 
+                                             data-full-src="{{ url_for('image', username=user.username, filename=image) }}"
+                                             alt="{{ image }}">
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <p>暂无图片</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="log-section">
+            <h2 class="log-title" style="cursor: pointer;">▼ 日志</h2>
+            <div class="log-content" id="log-content" style="display: none;">
+                <!-- 日志内容将通过JavaScript加 -->
+            </div>
+        </div>
+    </div>
+
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 🐠的返图. 版权所有. 
+                <a href="https://github.com/ID-VerNe/PhotoViewer" target="_blank" style="color: #fff; text-decoration: none;">
+                    <img src="{{ url_for('static', filename='images/github-mark.png') }}" alt="GitHub" style="width: 20px; vertical-align: middle; margin-left: 10px;">
+                    GitHub
+                </a>
+            </p>
+        </div>
+    </footer>
+
+    <input type="hidden" id="admin-username" value="{{ admin_username }}">
+
+    <script>
+        // 日志新功能
+        function refreshLog() {
+            fetch(`{{ url_for('get_log_content') }}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('网络响应失败');
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    document.getElementById('log-content').innerHTML = data.split('\n').reverse().join('<br>');
+                })
+                .catch(error => {
+                    console.error('Error fetching log:', error);
+                    document.getElementById('log-content').innerHTML = "";
+                });
+        }
+
+        // 管理员用户处理
+        document.addEventListener('DOMContentLoaded', () => {
+            const userTable = document.querySelector('.admin-container table tbody');
+            if (userTable) {
+                const adminUsername = document.getElementById('admin-username').value;
+                console.log('管理员用户名:', adminUsername);
+                const rows = Array.from(userTable.querySelectorAll('tr'));
+                
+                rows.forEach(row => {
+                    const usernameCell = row.querySelector('td:first-child');
+                    const roleCell = row.querySelector('.user-role');
+                    
+                    if (usernameCell && usernameCell.textContent.trim() === adminUsername) {
+                        if (roleCell) {
+                            roleCell.textContent = '管理员';
+                            roleCell.style.fontWeight = 'bold';
+                            roleCell.style.color = '#666';
+                        }
+                        userTable.insertBefore(row, userTable.firstChild);
+                    }
+                });
+            }
+
+            // 添加日志标题点击事件
+            const logTitle = document.querySelector('.log-title');
+            const logContent = document.getElementById('log-content');
+            let isLogLoaded = false;
+
+            logTitle.addEventListener('click', () => {
+                if (logContent.style.display === 'none') {
+                    logContent.style.display = 'block';
+                    logTitle.textContent = '▲ 日志';
+                    if (!isLogLoaded) {
+                        refreshLog();
+                        isLogLoaded = true;
+                    }
+                } else {
+                    logContent.style.display = 'none';
+                    logTitle.textContent = '▼ 日志';
+                }
+            });
+
+            // 图片管理折叠功能
+            const imageTitle = document.querySelector('.image-title');
+            const imageManagement = document.querySelector('.image-management');
+            let isImagesLoaded = {};  // 使用对象存储每个用户的加载状态
+
+            imageTitle.addEventListener('click', () => {
+                if (imageManagement.style.display === 'none') {
+                    imageManagement.style.display = 'block';
+                    imageTitle.textContent = '▲ 图片管理';
+                } else {
+                    imageManagement.style.display = 'none';
+                    imageTitle.textContent = '▼ 图片管���';
+                }
+            });
+
+            // 用户图片区域折叠功
+            document.querySelectorAll('.user-title').forEach(title => {
+                const userSection = title.closest('.user-section');
+                const selectAllBtn = userSection.querySelector('.select-all-btn');
+                const invertSelectBtn = userSection.querySelector('.invert-select-btn');
+                const clearSelectBtn = userSection.querySelector('.clear-select-btn');
+                const batchDeleteBtn = userSection.querySelector('.batch-delete-btn');
+                const checkboxes = userSection.querySelectorAll('.image-checkbox');
+
+                // 添加标题点击事件
+                title.addEventListener('click', () => {
+                    const username = title.textContent.replace('▼ ', '').replace('▲ ', '');
+                    const imagesGrid = title.nextElementSibling;
+                    
+                    if (imagesGrid.style.display === 'none') {
+                        imagesGrid.style.display = 'block';
+                        title.textContent = `▲ ${username}`;
+                        
+                        // 延迟加载该用户的图片
+                        if (!isImagesLoaded[username]) {
+                            const images = imagesGrid.querySelectorAll('.image-item img');
+                            images.forEach(img => {
+                                img.src = img.dataset.src;
+                            });
+                            isImagesLoaded[username] = true;
+                        }
+                    } else {
+                        imagesGrid.style.display = 'none';
+                        title.textContent = `▼ ${username}`;
+                    }
+                });
+
+                // 修改图片点击处理
+                userSection.querySelectorAll('.image-item').forEach(item => {
+                    const img = item.querySelector('img');
+                    
+                    // 原有的选择功能
+                    item.addEventListener('click', (e) => {
+                        if (e.ctrlKey || e.metaKey) {  // 按住Ctrl/Cmd键点击时查看原图
+                            e.preventDefault();
+                            const fullSrc = img.dataset.fullSrc;
+                            window.open(fullSrc, '_blank');
+                        } else {  // 普通点击时选择图片
+                            const checkbox = item.querySelector('.image-checkbox');
+                            if (e.target !== checkbox) {
+                                checkbox.checked = !checkbox.checked;
+                                item.classList.toggle('selected', checkbox.checked);
+                                updateBatchDeleteButton(batchDeleteBtn, checkboxes);
+                            }
+                        }
+                    });
+
+                    // 防止复选框点击事件冒泡
+                    const checkbox = item.querySelector('.image-checkbox');
+                    checkbox.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        item.classList.toggle('selected', checkbox.checked);
+                        updateBatchDeleteButton(batchDeleteBtn, checkboxes);
+                    });
+                });
+
+                // 全选按钮处理
+                if (selectAllBtn) {
+                    selectAllBtn.addEventListener('click', () => {
+                        const isAllSelected = [...checkboxes].every(cb => cb.checked);
+                        checkboxes.forEach(cb => {
+                            cb.checked = !isAllSelected;
+                            cb.closest('.image-item').classList.toggle('selected', cb.checked);
+                        });
+                        updateBatchDeleteButton(batchDeleteBtn, checkboxes);
+                    });
+                }
+
+                // 反选按钮处理
+                if (invertSelectBtn) {
+                    invertSelectBtn.addEventListener('click', () => {
+                        checkboxes.forEach(cb => {
+                            cb.checked = !cb.checked;
+                            cb.closest('.image-item').classList.toggle('selected', cb.checked);
+                        });
+                        updateBatchDeleteButton(batchDeleteBtn, checkboxes);
+                    });
+                }
+
+                // 清除按钮处理
+                if (clearSelectBtn) {
+                    clearSelectBtn.addEventListener('click', () => {
+                        checkboxes.forEach(cb => {
+                            cb.checked = false;
+                            cb.closest('.image-item').classList.remove('selected');
+                        });
+                        updateBatchDeleteButton(batchDeleteBtn, checkboxes);
+                    });
+                }
+
+                // 批量删除处理
+                if (batchDeleteBtn) {
+                    batchDeleteBtn.addEventListener('click', async () => {
+                        if (!confirm('确定要删除选中的图片吗？')) return;
+
+                        const selectedImages = [...checkboxes]
+                            .filter(cb => cb.checked)
+                            .map(cb => ({
+                                username: cb.dataset.username,
+                                filename: cb.dataset.filename
+                            }));
+
+                        try {
+                            const response = await fetch('/batch_delete_images', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ images: selectedImages })
+                            });
+
+                            if (response.ok) {
+                                // 删除成功后移除对应的图片元素
+                                selectedImages.forEach(img => {
+                                    const imageItem = userSection.querySelector(
+                                        `.image-checkbox[data-username="${img.username}"][data-filename="${img.filename}"]`
+                                    ).closest('.image-item');
+                                    imageItem.remove();
+                                });
+                                
+                                // 获取更新后的复选框列表
+                                const remainingCheckboxes = userSection.querySelectorAll('.image-checkbox');
+                                
+                                // 更新按钮状态，使用新的复选框列表
+                                updateBatchDeleteButton(batchDeleteBtn, remainingCheckboxes);
+                                
+                                // 如果没有图片了，显示暂无图片
+                                if (remainingCheckboxes.length === 0) {
+                                    const imageGrid = userSection.querySelector('.image-grid');
+                                    imageGrid.innerHTML = '<p>暂无图片</p>';
+                                }
+                            } else {
+                                alert('删除失败，请重试');
+                            }
+                        } catch (error) {
+                            console.error('Error:', error);
+                            alert('删除失败，请重试');
+                        }
+                    });
+                }
+            });
+        });
+
+        // 移除原来的自动加载日志
+        window.onload = function() {
+            // 不再自动调用 refreshLog
+        };
+
+        function updateBatchDeleteButton(button, checkboxes) {
+            const selectedCount = [...checkboxes].filter(cb => cb.checked).length;
+            button.disabled = selectedCount === 0;
+            button.textContent = selectedCount > 0 ? `删除选中(${selectedCount})` : '删除选中';
+        }
+    </script>
+</body>
+</html> 

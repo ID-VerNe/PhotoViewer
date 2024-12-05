@@ -4,20 +4,22 @@
     <meta charset="UTF-8">
     <title>🐠的返图·注册</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
     <style>
         body, html {
-            font-family: 'MiSans', sans-serif;
+            font-family: var(--font-family-main);
         }
         .content {
             flex: 1;
             display: flex;
             justify-content: center;
             align-items: center;
+            
         }
         .form-container {
-            background-color: white;
+            background-color: var(--text-light);
             padding: 20px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 0 10px var(--shadow-color);
             border-radius: 8px;
         }
         .form-container h2 {
@@ -28,21 +30,21 @@
             width: 100%;
             padding: 10px;
             margin-bottom: 10px;
-            border: 1px solid #ccc;
+            border: 1px solid var(--border-color);
             border-radius: 4px;
         }
         .form-container button {
             width: 100%;
             padding: 10px;
-            background-color: rgb(213, 184, 255);
+            background-color: var(--primary-color);
             border: none;
             border-radius: 4px;
-            color: white;
-            font-size: 16px;
+            color: var(--text-light);
+            font-size: var(--font-size-normal);
             cursor: pointer;
         }
         .form-container button:hover {
-            background-color: #bfa1e6;
+            background-color: var(--primary-hover-color);
         }
     </style>
 </head>
