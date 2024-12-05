@@ -88,11 +88,11 @@ PhotoViewer/
 │ ├── styles.css # Style sheet
 │ └── theme.css # Theme file
 └── templates/ # Template files
-├── admin.html # Admin panel
-├── index.html # Homepage
-├── login.html # Login page
-├── register.html # Registration page
-└── upload.html # Upload page
+│ ├── admin.html # Admin panel
+│ ├── index.html # Homepage
+│ ├── login.html # Login page
+│ ├── register.html # Registration page
+│ └── upload.html # Upload page
 ```
 
 ## Usage Guide
