@@ -35,6 +35,33 @@
                 preloadOriginalImage(username, filename);
             }
         }
+
+        // 在现有的 script 标签中添加这个新函数
+        function toggleCheckbox(img) {
+            const checkbox = img.previousElementSibling;
+            checkbox.checked = !checkbox.checked;
+            updateNavbar();
+            toggleImageSize(checkbox);
+            onImageSelect(checkbox);
+        }
+
+        let lastClickTime = 0;
+        const DOUBLE_CLICK_THRESHOLD = 200;  // 将双击判定时间缩短到200毫秒（默认通常是300-500毫秒）
+        
+        function handleImageClick(user, filename, img) {
+            const currentTime = new Date().getTime();
+            const timeDiff = currentTime - lastClickTime;
+            
+            if (timeDiff < DOUBLE_CLICK_THRESHOLD) {
+                // 双击 - 查看图片
+                viewImage(user, filename);
+            } else {
+                // 单击 - 选择图片
+                toggleCheckbox(img);
+            }
+            
+            lastClickTime = currentTime;
+        }
     </script>
 </head>
 <style>
@@ -44,6 +71,18 @@
         /* 居中 */
         margin: 0 auto;
         margin-bottom: 30px;
+    }
+    
+    .image-container img {
+        border: 10px solid rgba(0, 0, 0, 0);
+        border-radius: 10px;
+        box-sizing: border-box;
+        outline: none;
+        box-shadow: none;
+    }
+    
+    .image-container input[type="checkbox"]:checked + img {
+        border-color: var(--primary-color);
     }
 </style>
 <body>
@@ -77,7 +116,10 @@
             {% for image in user_images %}
             <div class="image-container">
                 <input type="checkbox" class="select-checkbox" data-filename="{{ image }}" data-user="{{ user }}" onclick="updateNavbar(); toggleImageSize(this); onImageSelect(this)">
-                <img src="{{ url_for('thumbnail', username=user, filename=image) }}" class="thumbnail" loading="lazy" onclick="viewImage('{{ user }}', '{{ image }}')">
+                <img src="{{ url_for('thumbnail', username=user, filename=image) }}" 
+                     class="thumbnail" 
+                     loading="lazy" 
+                     onclick="handleImageClick('{{ user }}', '{{ image }}', this)">
             </div>
             {% endfor %}
             {% endfor %}
