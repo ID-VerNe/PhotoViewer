@@ -114,8 +114,7 @@ h1, h2, h3 {
 }
 
 .image-container:hover .select-checkbox {
-    display: block;
-    background-color: rgb(213, 184, 255);
+    display: none !important;
 }
 
 .thumbnail {
@@ -137,7 +136,7 @@ h1, h2, h3 {
 }
 
 .select-checkbox {
-    display: none;
+    display: none !important;
     position: absolute;
     top: 5px;
     left: 5px;
@@ -149,8 +148,7 @@ h1, h2, h3 {
 }
 
 .select-checkbox:checked {
-    display: block;
-    background-color: rgb(213, 184, 255);
+    display: none !important;
 }
 
 button {
@@ -317,7 +315,7 @@ input[type="checkbox"]:checked + label::after {
   color: rgb(213, 184, 255);
 }
 
-/* 为复选框创建自定义样��� */
+/* 为复选框创建自定义样式 */
 input[type="checkbox"] + label::before {
   content: "\2714"; /* 使用Unicode字符表示勾选符号 */
   display: inline-block;
@@ -367,7 +365,7 @@ body, html {
     box-sizing: border-box; /* 确保 padding 和 border 包含在宽度内 */
 }
 
-/* 确保 #gallery 元素不会导致滚动条出现 */
+/* 确保 #gallery 元���不会导致滚动条出现 */
 #gallery {
     width: 100%;
     overflow-x: hidden; /* 隐藏水平滚动条 */
