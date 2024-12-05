@@ -77,6 +77,7 @@ Main configuration options in `setting.py`:
 
 ## Project Structure
 
+```
 PhotoViewer/
 ├── app.py # Main application file
 ├── setting.py # Configuration file
@@ -92,7 +93,7 @@ PhotoViewer/
 ├── login.html # Login page
 ├── register.html # Registration page
 └── upload.html # Upload page
-
+```
 
 ## Usage Guide
 1. Default Admin Account
