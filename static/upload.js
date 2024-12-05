@@ -1,5 +1,8 @@
 let selectedFiles = new Map(); // 存储选中的文件
 
+// 使用服务器传递的设置
+const MAX_UPLOAD_SIZE = SERVER_SETTINGS.maxUploadSize;
+
 document.addEventListener('DOMContentLoaded', () => {
     const uploadArea = document.getElementById('upload-area');
     const fileInput = document.getElementById('file-input');
@@ -50,8 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // 检查文件大小
-            if (file.size > 10 * 1024 * 1024) { // 10MB
-                alert('文件大小不能超过10MB');
+            if (file.size > MAX_UPLOAD_SIZE) {
+                alert(`文件大小不能超过${formatFileSize(MAX_UPLOAD_SIZE)}`);
                 return;
             }
 
