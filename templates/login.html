@@ -45,6 +45,91 @@
         .form-container button:hover {
             background-color: var(--primary-hover-color);
         }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--text-light);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px var(--shadow-color);
+            width: 300px;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: var(--font-family-main);
+            box-sizing: border-box;
+        }
+
+        .modal-content button {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 4px;
+            color: var(--text-light);
+            font-size: var(--font-size-normal);
+            cursor: pointer;
+        }
+
+        .modal-content button:hover {
+            background-color: var(--primary-hover-color);
+        }
+
+        .modal-content h3 {
+            margin-bottom: 20px;
+            text-align: center;
+            color: var(--text-dark);
+            font-size: var(--font-size-large);
+        }
+
+        .modal-close {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            cursor: pointer;
+            font-size: 20px;
+            color: var(--text-dark);
+            background: none;
+            border: none;
+            padding: 0;
+            width: auto;
+        }
+
+        .modal-close:hover {
+            color: var(--primary-color);
+        }
+
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+            padding: 5px;
+            border-radius: 4px;
+        }
+
+        .modal-content form {
+            width: 100%;
+        }
     </style>
 </head>
 <body>
@@ -62,7 +147,12 @@
                 <input type="password" name="password" placeholder="密码" required>
                 <button type="submit">登录</button>
             </form>
-            <p>还没有账号？<a href="{{ url_for('register') }}">注册</a></p>
+            <p>还没有账号？
+                <a href="{{ url_for('register') }}">注册</a>
+                &nbsp;&nbsp;&nbsp;
+                <a href="#" onclick="showResetPasswordModal()">修改密码</a>
+            </p>
+            
         </div>
     </div>
 
@@ -76,5 +166,83 @@
             </p>
         </div>
     </footer>
+
+    <div id="resetPasswordModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeResetPasswordModal()">&times;</span>
+            <h3>修改密码</h3>
+            <form id="resetPasswordForm" onsubmit="handleResetPassword(event)">
+                <input type="text" name="username" placeholder="用户名" required>
+                <input type="password" name="old_password" placeholder="原密码" required>
+                <input type="password" name="new_password" placeholder="新密码" required>
+                <input type="password" name="confirm_password" placeholder="确认新密码" required>
+                <button type="submit">确认修改</button>
+            </form>
+            <div id="errorMessage" class="error-message"></div>
+        </div>
+    </div>
+
+    <script>
+        function showResetPasswordModal() {
+            document.getElementById('resetPasswordModal').style.display = 'flex';
+        }
+
+        function closeResetPasswordModal() {
+            document.getElementById('resetPasswordModal').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('resetPasswordForm').reset();
+        }
+
+        async function handleResetPassword(event) {
+            event.preventDefault();
+            const form = event.target;
+            const errorMessage = document.getElementById('errorMessage');
+            
+            // 验证新密码是否匹配
+            if (form.new_password.value !== form.confirm_password.value) {
+                errorMessage.textContent = '两次输入的新密码不匹配';
+                errorMessage.style.display = 'block';
+                return;
+            }
+
+            // 准备发送的数据
+            const formData = {
+                username: form.username.value,
+                old_password: form.old_password.value,
+                new_password: form.new_password.value
+            };
+
+            try {
+                const response = await fetch('/reset_password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('密码修改成功！');
+                    closeResetPasswordModal();
+                } else {
+                    errorMessage.textContent = data.error || '密码修改失败';
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                errorMessage.textContent = '发生错误，请稍后重试';
+                errorMessage.style.display = 'block';
+            }
+        }
+
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            const modal = document.getElementById('resetPasswordModal');
+            if (event.target === modal) {
+                closeResetPasswordModal();
+            }
+        }
+    </script>
 </body>
 </html> 

@@ -10,6 +10,8 @@ from setting import Settings
 from logging.config import dictConfig
 from werkzeug.utils import secure_filename
 from PIL import Image
+import os.path
+from operator import itemgetter
 
 app = Flask(__name__)
 app.secret_key = Settings.SECRET_KEY
@@ -108,10 +110,39 @@ def logout():
 def index():
     if current_user.is_admin:
         user_folders = [f for f in os.listdir(BASE_IMAGE_FOLDER) if os.path.isdir(os.path.join(BASE_IMAGE_FOLDER, f))]
-        images = {user: [f for f in os.listdir(os.path.join(BASE_IMAGE_FOLDER, user)) if f.lower().endswith(('.jpg', '.png'))] for user in user_folders}
+        images = {}
+        for user in user_folders:
+            user_path = os.path.join(BASE_IMAGE_FOLDER, user)
+            # 获取图片列表并添加修改时间信息
+            image_list = []
+            for f in os.listdir(user_path):
+                if f.lower().endswith(('.jpg', '.png')):
+                    file_path = os.path.join(user_path, f)
+                    # 获取文件的修改时间
+                    mtime = os.path.getmtime(file_path)
+                    image_list.append((f, mtime))
+            
+            # 按修改时间降序排序（新的在前）
+            image_list.sort(key=itemgetter(1), reverse=True)
+            # 只保留文件名
+            images[user] = [img[0] for img in image_list]
     else:
         user_folder = os.path.join(BASE_IMAGE_FOLDER, current_user.username)
-        images = {current_user.username: [f for f in os.listdir(user_folder) if f.lower().endswith(('.jpg', '.png'))]}
+        # 获取图片列表并添加修改时间信息
+        image_list = []
+        if os.path.exists(user_folder):
+            for f in os.listdir(user_folder):
+                if f.lower().endswith(('.jpg', '.png')):
+                    file_path = os.path.join(user_folder, f)
+                    # 获取文件的修改时间
+                    mtime = os.path.getmtime(file_path)
+                    image_list.append((f, mtime))
+        
+        # 按修改时间降序排序（新的在前）
+        image_list.sort(key=itemgetter(1), reverse=True)
+        # 只保留文件名
+        images = {current_user.username: [img[0] for img in image_list]}
+
     logging.info("访问主页，用户: %s", current_user.username)
     return render_template('index.html', images=images, is_admin=current_user.is_admin)
 
@@ -145,7 +176,28 @@ def admin():
         return redirect(url_for('index'))
 
     users = UserManager.get_all_users()
-    images = ImageManager.get_user_images(users)
+    
+    # 获取并排序每个用户的图片
+    images = {}
+    for user in users:
+        if user.username != Settings.ADMIN_USERNAME:  # 跳过管理员
+            user_path = os.path.join(BASE_IMAGE_FOLDER, user.username)
+            if os.path.exists(user_path):
+                # 获取图片列表并添加修改时间信息
+                image_list = []
+                for f in os.listdir(user_path):
+                    if f.lower().endswith(('.jpg', '.png')):
+                        file_path = os.path.join(user_path, f)
+                        # 获取文件的修改时间
+                        mtime = os.path.getmtime(file_path)
+                        image_list.append((f, mtime))
+                
+                # 按修改时间降序排序（新的在前）
+                image_list.sort(key=itemgetter(1), reverse=True)
+                # 只保留文件名
+                images[user.username] = [img[0] for img in image_list]
+            else:
+                images[user.username] = []
 
     return render_template('admin.html', 
                          users=users, 
@@ -185,7 +237,7 @@ def reset_password(username):
         return redirect(url_for('admin'))
 
     new_password = UserManager.reset_user_password(username)
-    flash(f'用户 {username} 的密码已重置为 {new_password}。')
+    flash(f'用户 {username} 的密码已置为 {new_password}。')
     return redirect(url_for('admin'))
 
 @app.route('/get_log_content')
@@ -225,7 +277,7 @@ def upload_image():
         return jsonify({'error': '无权限'}), 403
 
     if 'file' not in request.files:
-        return jsonify({'error': '没有文件'}), 400
+        return jsonify({'error': '没有件'}), 400
 
     file = request.files['file']
     username = request.form.get('username')
@@ -333,6 +385,59 @@ def initialize_thumbnails():
                         logging.error(f"创建缩略图失败 {username}/{filename}: {str(e)}")
     
     logging.info("缩略图初始化完成")
+
+# 在现有的路由之后添加新的重置密码路由
+@app.route('/reset_password', methods=['POST'])
+def reset_password_user():
+    try:
+        data = request.get_json()
+        username = data.get('username')
+        old_password = data.get('old_password')
+        new_password = data.get('new_password')
+
+        # 验证所有必需字段是否存在
+        if not all([username, old_password, new_password]):
+            return jsonify({'error': '请填写所有必需字段'}), 400
+
+        # 读取用户数据
+        users = []
+        user_found = False
+        user_id = None
+        
+        with open(Settings.USER_CSV_FILE, 'r', newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                if row['username'] == username:
+                    # 验证旧密码
+                    if not check_password_hash(row['password'], old_password):
+                        return jsonify({'error': '原密码错误'}), 401
+                    # 更新密码
+                    row['password'] = generate_password_hash(new_password)
+                    user_found = True
+                    user_id = row['id']
+                users.append(row)
+
+        if not user_found:
+            return jsonify({'error': '用户不存在'}), 404
+
+        # 将更新后的用户数据写回文件
+        with open(Settings.USER_CSV_FILE, 'w', newline='') as csvfile:
+            fieldnames = ['id', 'username', 'password']
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(users)
+
+        # 记录密码修改日志
+        logging.info(f"用户 {username} 成功修改密码")
+        
+        return jsonify({
+            'success': True,
+            'message': '密码修改成功'
+        })
+
+    except Exception as e:
+        logging.error(f"密码重置失败: {str(e)}")
+        return jsonify({'error': '密码重置失败，请稍后重试'}), 500
 
 if __name__ == '__main__':
     # 初始化管理员用户
