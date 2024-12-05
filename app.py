@@ -208,9 +208,15 @@ def upload():
         return redirect(url_for('index'))
     
     users = UserManager.get_all_users()
+    # 传递设置到模板
+    settings = {
+        'max_upload_size': Settings.MAX_UPLOAD_SIZE,
+        'allowed_extensions': list(Settings.ALLOWED_EXTENSIONS)
+    }
     return render_template('upload.html', 
                          users=users,
-                         admin_username=Settings.ADMIN_USERNAME)
+                         admin_username=Settings.ADMIN_USERNAME,
+                         settings=settings)
 
 @app.route('/upload_image', methods=['POST'])
 @login_required
@@ -268,25 +274,71 @@ def batch_delete_images():
     else:
         return jsonify({'success': False, 'message': f'删除完成，成功 {success_count} 张，失败 {len(images) - success_count} 张'})
 
-# 添加新的缩略图路由
+# 修改thumbnail路由，优化性能
 @app.route('/thumbnail/<username>/<filename>')
 @login_required
 def thumbnail(username, filename):
     if current_user.is_admin or current_user.username == username:
         thumbnail_folder = os.path.join(BASE_IMAGE_FOLDER, username, Settings.THUMBNAIL_FOLDER)
-        # 如果缩略图不存在，尝试创建
-        if not os.path.exists(os.path.join(thumbnail_folder, filename)):
+        thumbnail_path = os.path.join(thumbnail_folder, filename)
+        
+        # 如果缩略图不存在，创建缩略图
+        if not os.path.exists(thumbnail_path):
             original_path = os.path.join(BASE_IMAGE_FOLDER, username, filename)
             if os.path.exists(original_path):
-                ImageProcessor.create_thumbnail(original_path, username)
+                if not os.path.exists(thumbnail_folder):
+                    os.makedirs(thumbnail_folder)
+                try:
+                    ImageProcessor.create_thumbnail(original_path, username)
+                except Exception as e:
+                    logging.error(f"创建缩略图失败 {username}/{filename}: {str(e)}")
+                    # 如果缩略图创建失败，返回原图
+                    return send_from_directory(os.path.dirname(original_path), filename)
         
-        logging.info(f"请求查看缩略图: {username}/{filename}")
         return send_from_directory(thumbnail_folder, filename)
     else:
         flash('无权访问此图片。')
         return redirect(url_for('index'))
 
+# 在现有代码中添加一个新的函数来处理缩略图初始化
+def initialize_thumbnails():
+    """
+    Initialize thumbnails for all images that don't have thumbnails yet
+    """
+    logging.info("开始检查并创建缩略图...")
+    
+    # 遍历所有用户文件夹
+    for username in os.listdir(BASE_IMAGE_FOLDER):
+        user_path = os.path.join(BASE_IMAGE_FOLDER, username)
+        if not os.path.isdir(user_path):
+            continue
+            
+        # 确保缩略图文件夹存在
+        thumbnail_folder = os.path.join(user_path, Settings.THUMBNAIL_FOLDER)
+        if not os.path.exists(thumbnail_folder):
+            os.makedirs(thumbnail_folder)
+            
+        # 遍历用户的所有图片
+        for filename in os.listdir(user_path):
+            # 检查是否是图片文件
+            if any(filename.lower().endswith(ext) for ext in Settings.ALLOWED_EXTENSIONS):
+                # 检查是否已存在缩略图
+                thumbnail_path = os.path.join(thumbnail_folder, filename)
+                if not os.path.exists(thumbnail_path):
+                    try:
+                        original_path = os.path.join(user_path, filename)
+                        ImageProcessor.create_thumbnail(original_path, username)
+                        logging.info(f"为 {username}/{filename} 创建缩略图")
+                    except Exception as e:
+                        logging.error(f"创建缩略图失败 {username}/{filename}: {str(e)}")
+    
+    logging.info("缩略图初始化完成")
+
 if __name__ == '__main__':
     # 初始化管理员用户
     Utility.initialize_admin()
+    
+    # 初始化缩略图
+    initialize_thumbnails()
+    
     app.run(debug=Settings.DEBUG, port=Settings.SERVER_PORT)

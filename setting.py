@@ -17,9 +17,9 @@ class Settings:
     DEFAULT_PASSWORD = '123456'
     IMAGE_QUALITY = 80  # JPEG压缩质量(1-100)
     IMAGE_FORMAT = 'JPEG'  # 保存格式
-    MAX_IMAGE_SIZE = 4000  # 最大图片尺寸（长边）
-    ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}  # 允许的图片格式
-    MAX_UPLOAD_SIZE = 30 * 1024 * 1024  # 最大上传大小（10MB）
+    MAX_IMAGE_SIZE = 8000  # 最大图片尺寸（长边）
+    ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png'}  # 允许的图片格式
+    MAX_UPLOAD_SIZE = 30 * 1024 * 1024  # 最大上传大小
     THUMBNAIL_SIZE = 0.25  # 缩略图尺寸为原图的25%
     THUMBNAIL_FOLDER = 'thumbnails'  # 缩略图子文件夹名
     THUMBNAIL_QUALITY = 60  # 缩略图质量
