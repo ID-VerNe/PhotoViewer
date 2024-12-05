@@ -7,7 +7,6 @@ PhotoViewer is a lightweight Flask-based image management system designed for mu
 - User System
   - User registration/login
   - Admin account
-  - Password reset
 - Image Management
   - Image upload (drag & drop supported)
   - Image preview (with thumbnails)
