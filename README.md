@@ -25,7 +25,7 @@ PhotoViewer is a lightweight Flask-based image management system designed for mu
 
 ## Requirements
 - Python 3.8+
-- Supported image formats: JPG, JPEG, PNG, GIF, WebP
+- Supported image formats: JPG, JPEG, PNG
 - Recommended OS: Windows/Linux/MacOS
 
 ## Installation
