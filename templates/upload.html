@@ -123,6 +123,8 @@
         <div class="upload-area" id="upload-area">
             <i>📁</i>
             <p>点击或拖拽文件到此处上传</p>
+            <p style="font-size: 0.9em; color: #666;">支持的格式：{{ settings.allowed_extensions|join('、')|upper }}</p>
+            <p style="font-size: 0.9em; color: #666;">单个文件大小限制：{{ (settings.max_upload_size / 1024 / 1024)|round|int }}MB</p>
             <input type="file" id="file-input" multiple accept="image/*" style="display: none;">
         </div>
 
@@ -139,6 +141,13 @@
         </div>
     </footer>
 
+    <script>
+        // 将服务器端设置传递给JavaScript
+        const SERVER_SETTINGS = {
+            maxUploadSize: {{ settings.max_upload_size }},
+            allowedExtensions: {{ settings.allowed_extensions|tojson }}
+        };
+    </script>
     <script src="{{ url_for('static', filename='upload.js') }}"></script>
 </body>
 </html> 

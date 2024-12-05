@@ -8,6 +8,34 @@
     <!-- 引入JSZip和FileSaver.js库 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script>
+        // 用于存储预加载的原图
+        const imageCache = new Map();
+
+        // 预加载原图
+        async function preloadOriginalImage(username, filename) {
+            if (!imageCache.has(filename)) {
+                try {
+                    const response = await fetch(`/image/${username}/${filename}`);
+                    const blob = await response.blob();
+                    imageCache.set(filename, blob);
+                    console.log(`预加载图片 ${filename} 成功`);
+                } catch (error) {
+                    console.error(`预加载图片 ${filename} 失败:`, error);
+                }
+            }
+        }
+
+        // 当选中图片时预加载原图
+        function onImageSelect(checkbox) {
+            const filename = checkbox.dataset.filename;
+            const username = checkbox.dataset.user;
+            
+            if (checkbox.checked) {
+                preloadOriginalImage(username, filename);
+            }
+        }
+    </script>
 </head>
 <style>
     .content {
@@ -48,8 +76,8 @@
             {% for user, user_images in images.items() %}
             {% for image in user_images %}
             <div class="image-container">
-                <input type="checkbox" class="select-checkbox" data-filename="{{ image }}" data-user="{{ user }}" onclick="updateNavbar(); toggleImageSize(this)">
-                <img src="{{ url_for('image', username=user, filename=image) }}" class="thumbnail" loading="lazy" onclick="viewImage('{{ user }}', '{{ image }}')">
+                <input type="checkbox" class="select-checkbox" data-filename="{{ image }}" data-user="{{ user }}" onclick="updateNavbar(); toggleImageSize(this); onImageSelect(this)">
+                <img src="{{ url_for('thumbnail', username=user, filename=image) }}" class="thumbnail" loading="lazy" onclick="viewImage('{{ user }}', '{{ image }}')">
             </div>
             {% endfor %}
             {% endfor %}
@@ -79,5 +107,43 @@
     </footer>
 
     <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+    <script>
+        async function downloadIndividually() {
+            const checkboxes = document.querySelectorAll('.select-checkbox:checked');
+            if (checkboxes.length === 0) {
+                alert('请先选择要下载的图片');
+                return;
+            }
+
+            for (const checkbox of checkboxes) {
+                const filename = checkbox.dataset.filename;
+                const username = checkbox.dataset.user;
+                
+                // 从缓存中获取图片
+                let imageBlob = imageCache.get(filename);
+                
+                // 如果缓存中没有，则重新获取
+                if (!imageBlob) {
+                    try {
+                        const response = await fetch(`/image/${username}/${filename}`);
+                        imageBlob = await response.blob();
+                    } catch (error) {
+                        console.error(`下载图片 ${filename} 失败:`, error);
+                        continue;
+                    }
+                }
+                
+                // 使用浏览器下载器下载
+                const url = window.URL.createObjectURL(imageBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }
+        }
+    </script>
 </body>
 </html> 
